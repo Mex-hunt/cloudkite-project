@@ -55,8 +55,7 @@ steps:
       - DOCKERHUB_TOKEN
     args:
       - -c
-       - 'echo "$$DOCKERHUB_TOKEN" | docker login --username "$$DOCKERHUB_USERNAME" --password-stdin'
-
+      - 'echo "$$DOCKERHUB_TOKEN" | docker login --username "$$DOCKERHUB_USERNAME" --password-stdin'
   - id: push-dockerhub-images
     name: gcr.io/cloud-builders/docker
     entrypoint: sh
