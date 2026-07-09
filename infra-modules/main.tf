@@ -23,6 +23,42 @@ module "iam" {
   depends_on = [module.foundation]
 }
 
+resource "google_secret_manager_secret" "dockerhub_username" {
+  project   = var.project_id
+  secret_id = var.dockerhub_username_secret_id
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [module.foundation]
+}
+
+resource "google_secret_manager_secret" "dockerhub_token" {
+  project   = var.project_id
+  secret_id = var.dockerhub_token_secret_id
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [module.foundation]
+}
+
+resource "google_secret_manager_secret_iam_member" "cloud_build_dockerhub_username" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.dockerhub_username.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${module.iam.cloud_build_service_account_email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "cloud_build_dockerhub_token" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.dockerhub_token.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${module.iam.cloud_build_service_account_email}"
+}
+
 resource "google_compute_network" "main" {
   project                 = var.project_id
   name                    = var.network_name

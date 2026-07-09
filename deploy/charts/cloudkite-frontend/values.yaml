@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: us-central1-docker.pkg.dev/PROJECT_ID/cloudkite/auth-frontend
+  repository: obachimex/cloudkite-frontend
   tag: 0.1.0
   pullPolicy: IfNotPresent
 
@@ -51,7 +51,7 @@ backend:
   enabled: true
   replicaCount: 2
   image:
-    repository: us-central1-docker.pkg.dev/PROJECT_ID/cloudkite/auth-backend
+    repository: obachimex/cloudkite-backend
     tag: 0.1.0
     pullPolicy: IfNotPresent
   service:

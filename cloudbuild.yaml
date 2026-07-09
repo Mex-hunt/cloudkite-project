@@ -1,6 +1,7 @@
 substitutions:
   _APP_NAME: auth-frontend
   _BACKEND_APP_NAME: auth-backend
+  _DOCKERHUB_NAMESPACE: obachimex
   _APP_VERSION: ${SHORT_SHA}
   _REGION: us-central1
   _ARTIFACT_REPOSITORY: cloudkite
@@ -61,6 +62,33 @@ steps:
       - push
       - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPOSITORY}/${_BACKEND_APP_NAME}:${_APP_VERSION}
 
+  - id: dockerhub-login
+    name: gcr.io/cloud-builders/docker
+    entrypoint: sh
+    secretEnv:
+      - DOCKERHUB_USERNAME
+      - DOCKERHUB_TOKEN
+    args:
+      - -ceu
+      - |
+        printf '%s' "$$DOCKERHUB_TOKEN" |
+          docker login --username "$$DOCKERHUB_USERNAME" --password-stdin
+
+  - id: push-dockerhub-images
+    name: gcr.io/cloud-builders/docker
+    entrypoint: sh
+    args:
+      - -ceu
+      - |
+        docker tag \
+          "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPOSITORY}/${_APP_NAME}:${_APP_VERSION}" \
+          "${_DOCKERHUB_NAMESPACE}/cloudkite-frontend:${_APP_VERSION}"
+        docker tag \
+          "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPOSITORY}/${_BACKEND_APP_NAME}:${_APP_VERSION}" \
+          "${_DOCKERHUB_NAMESPACE}/cloudkite-backend:${_APP_VERSION}"
+        docker push "${_DOCKERHUB_NAMESPACE}/cloudkite-frontend:${_APP_VERSION}"
+        docker push "${_DOCKERHUB_NAMESPACE}/cloudkite-backend:${_APP_VERSION}"
+
   - id: get-gke-credentials
     name: gcr.io/cloud-builders/gcloud
     entrypoint: bash
@@ -106,3 +134,12 @@ steps:
 images:
   - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPOSITORY}/${_APP_NAME}:${_APP_VERSION}
   - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPOSITORY}/${_BACKEND_APP_NAME}:${_APP_VERSION}
+  - ${_DOCKERHUB_NAMESPACE}/cloudkite-frontend:${_APP_VERSION}
+  - ${_DOCKERHUB_NAMESPACE}/cloudkite-backend:${_APP_VERSION}
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/${PROJECT_ID}/secrets/cloudkite-dockerhub-username/versions/latest
+      env: DOCKERHUB_USERNAME
+    - versionName: projects/${PROJECT_ID}/secrets/cloudkite-dockerhub-token/versions/latest
+      env: DOCKERHUB_TOKEN

@@ -105,6 +105,18 @@ variable "artifact_repository_name" {
   default     = "cloudkite"
 }
 
+variable "dockerhub_username_secret_id" {
+  description = "Secret Manager ID containing the Docker Hub username."
+  type        = string
+  default     = "cloudkite-dockerhub-username"
+}
+
+variable "dockerhub_token_secret_id" {
+  description = "Secret Manager ID containing the Docker Hub access token."
+  type        = string
+  default     = "cloudkite-dockerhub-token"
+}
+
 variable "required_services" {
   description = "GCP APIs required by the platform."
   type        = set(string)
