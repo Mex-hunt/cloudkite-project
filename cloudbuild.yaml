@@ -50,12 +50,9 @@ steps:
   - id: dockerhub-login
     name: gcr.io/cloud-builders/docker
     entrypoint: sh
-    secretEnv:
-      - DOCKERHUB_USERNAME
-      - DOCKERHUB_TOKEN
     args:
       - -c
-      - 'echo "$$DOCKERHUB_TOKEN" | docker login --username "$$DOCKERHUB_USERNAME" --password-stdin'
+      - 'echo "${_DOCKERHUB_TOKEN}" | docker login --username "${_DOCKERHUB_USERNAME} --password-stdin'
 
   - id: push-dockerhub-images
     name: gcr.io/cloud-builders/docker
