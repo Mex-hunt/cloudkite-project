@@ -1,0 +1,40 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "cloudkite-frontend.fullname" . }}
+  labels:
+    {{- include "cloudkite-frontend.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    {{- if .Values.ingress.staticIpName }}
+    kubernetes.io/ingress.global-static-ip-name: {{ .Values.ingress.staticIpName | quote }}
+    {{- end }}
+    {{- if .Values.ingress.managedCertificateName }}
+    networking.gke.io/managed-certificates: {{ .Values.ingress.managedCertificateName | quote }}
+    {{- end }}
+    {{- if .Values.ingress.forceHttps }}
+    networking.gke.io/v1beta1.FrontendConfig: {{ include "cloudkite-frontend.fullname" . | quote }}
+    {{- end }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          {{- if .Values.backend.enabled }}
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "cloudkite-frontend.fullname" . }}-backend
+                port:
+                  number: {{ .Values.backend.service.port }}
+          {{- end }}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "cloudkite-frontend.fullname" . }}
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}

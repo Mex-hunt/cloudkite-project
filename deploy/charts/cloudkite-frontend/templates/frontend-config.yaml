@@ -1,0 +1,12 @@
+{{- if and .Values.ingress.enabled .Values.ingress.forceHttps }}
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: {{ include "cloudkite-frontend.fullname" . }}
+  labels:
+    {{- include "cloudkite-frontend.labels" . | nindent 4 }}
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT
+{{- end }}
