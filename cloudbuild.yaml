@@ -16,9 +16,9 @@ substitutions:
   _DATABASE_SECRET_ID: cloudkite-database-credentials
 availableSecrets:
   secretManager:
-    - versionName: projects/$PROJECT_ID/secrets/dockerhub-token/versions/latest
+    - versionName: projects/${PROJECT_ID}/secrets/DOCKERHUB_TOKEN/versions/latest
       env: DOCKERHUB_TOKEN
-    - versionName: projects/$PROJECT_ID/secrets/dockerhub-username/versions/latest
+    - versionName: projects/${PROJECT_ID}/secrets/DOCKERHUB_USERNAME/versions/latest
       env: DOCKERHUB_USERNAME
 
 options:
