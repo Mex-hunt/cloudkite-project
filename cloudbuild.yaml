@@ -1,5 +1,6 @@
 substitutions:
   _DOCKERHUB_NAMESPACE: obachimex
+  _DOCKERHUB_USERNAME: obachimex
   _APP_VERSION: ${SHORT_SHA}
   _REGION: us-central1
   _VITE_API_BASE_URL: http://localhost:8000
@@ -49,10 +50,15 @@ steps:
 
   - id: dockerhub-login
     name: gcr.io/cloud-builders/docker
-    entrypoint: sh
+    entrypoint: bash
+    secretEnv:
+      - DOCKERHUB_TOKEN
     args:
       - -c
-      - 'echo "${_DOCKERHUB_TOKEN}" | docker login --username "${_DOCKERHUB_USERNAME} --password-stdin'
+      - |
+        echo "$$DOCKERHUB_TOKEN" | docker login \
+          --username "${_DOCKERHUB_USERNAME}" \
+          --password-stdin
 
   - id: push-dockerhub-images
     name: gcr.io/cloud-builders/docker
@@ -107,7 +113,5 @@ steps:
 
 availableSecrets:
   secretManager:
-    - versionName: projects/${PROJECT_ID}/secrets/cloudkite-dockerhub-username/versions/latest
-      env: DOCKERHUB_USERNAME
     - versionName: projects/${PROJECT_ID}/secrets/cloudkite-dockerhub-token/versions/latest
       env: DOCKERHUB_TOKEN
