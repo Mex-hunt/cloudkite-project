@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: frontend-${{ github.ref }}
@@ -66,19 +65,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set frontend image name
-        run: |
-          REPOSITORY="$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')"
-          echo "FRONTEND_IMAGE=ghcr.io/${REPOSITORY}/auth-frontend" >> "$GITHUB_ENV"
-
-      - name: Log in to GitHub Container Registry
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push frontend image
+        env:
+          FRONTEND_IMAGE: obachimex/cloudkite-frontend
         run: |
           docker build -f app/frontend/Dockerfile -t "${FRONTEND_IMAGE}:${{ github.sha }}" app/frontend
           docker push "${FRONTEND_IMAGE}:${{ github.sha }}"

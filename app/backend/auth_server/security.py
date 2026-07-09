@@ -31,7 +31,7 @@ def base64url_decode(value: str) -> bytes:
 
 
 def sign(payload: str) -> str:
-    secret = get_settings().token_secret.encode()
+    secret = get_settings().resolved_token_secret.encode()
     return base64url_encode(hmac.new(secret, payload.encode(), hashlib.sha256).digest())
 
 

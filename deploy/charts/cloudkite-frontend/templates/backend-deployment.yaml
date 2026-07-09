@@ -1,0 +1,80 @@
+{{- if .Values.backend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cloudkite-frontend.fullname" . }}-backend
+  labels:
+    {{- include "cloudkite-frontend.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      {{- include "cloudkite-frontend.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "cloudkite-frontend.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      serviceAccountName: cloudkite-backend
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          env:
+            - name: DATABASE_CREDENTIALS_FILE
+              value: /var/secrets/database.json
+            - name: ENVIRONMENT
+              value: production
+            - name: CORS_ORIGINS
+              value: "https://{{ .Values.ingress.host }}"
+          ports:
+            - name: http
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 20
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+          volumeMounts:
+            - name: database-credentials
+              mountPath: /var/secrets
+              readOnly: true
+        - name: cloud-sql-proxy
+          image: {{ .Values.backend.cloudSql.proxyImage | quote }}
+          args:
+            - "--private-ip"
+            - "--structured-logs"
+            - "--port=5432"
+            - {{ .Values.backend.cloudSql.connectionName | quote }}
+          securityContext:
+            runAsNonRoot: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+      volumes:
+        - name: database-credentials
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: cloudkite-database
+{{- end }}

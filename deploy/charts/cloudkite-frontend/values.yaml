@@ -1,0 +1,71 @@
+replicaCount: 2
+
+image:
+  repository: obachimex/cloudkite-frontend
+  tag: 0.1.0
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  className: "gce"
+  host: auth.example.com
+  staticIpName: ""
+  managedCertificateName: ""
+  forceHttps: true
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+podAnnotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+backend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: obachimex/cloudkite-backend
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+  service:
+    port: 8000
+  googleServiceAccount: cloudkite-backend@PROJECT_ID.iam.gserviceaccount.com
+  cloudSql:
+    connectionName: PROJECT_ID:us-central1:cloudkite-postgres
+    proxyImage: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
+    credentialsSecretProject: PROJECT_ID
+    credentialsSecretId: cloudkite-database-credentials
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
