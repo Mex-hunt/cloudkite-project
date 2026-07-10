@@ -93,9 +93,3 @@ resource "google_project_iam_member" "this" {
   role    = each.value.role
   member  = "serviceAccount:${google_service_account.this[each.value.service_account].email}"
 }
-
-resource "google_service_account_iam_member" "backend_workload_identity" {
-  service_account_id = google_service_account.this["backend_workload"].name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.workload_identity_namespace}/${var.workload_identity_service_account}]"
-}
