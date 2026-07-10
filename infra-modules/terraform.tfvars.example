@@ -7,7 +7,6 @@ workload_service_account_name    = "cloudkite-backend"
 workload_identity_namespace      = "cloudkite"
 workload_identity_service_account = "cloudkite-backend"
 artifact_repository_name         = "cloudkite"
-dockerhub_username_secret_id      = "cloudkite-dockerhub-username"
 dockerhub_token_secret_id         = "cloudkite-dockerhub-token"
 
 cloud_sql_instance_name        = "cloudkite-postgres"

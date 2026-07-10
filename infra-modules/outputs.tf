@@ -44,11 +44,6 @@ output "artifact_repository_url" {
   value       = module.foundation.artifact_repository_url
 }
 
-output "dockerhub_username_secret_id" {
-  description = "Secret Manager ID awaiting the Docker Hub username version."
-  value       = google_secret_manager_secret.dockerhub_username.secret_id
-}
-
 output "dockerhub_token_secret_id" {
   description = "Secret Manager ID awaiting the Docker Hub token version."
   value       = google_secret_manager_secret.dockerhub_token.secret_id
