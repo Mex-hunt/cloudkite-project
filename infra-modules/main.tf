@@ -12,13 +12,11 @@ module "foundation" {
 module "iam" {
   source = "./modules/iam"
 
-  project_id                        = var.project_id
-  node_service_account_name         = var.node_service_account_name
-  cloud_build_service_account_name  = var.cloud_build_service_account_name
-  terraform_service_account_name    = var.terraform_service_account_name
-  workload_service_account_name     = var.workload_service_account_name
-  workload_identity_namespace       = var.workload_identity_namespace
-  workload_identity_service_account = var.workload_identity_service_account
+  project_id                       = var.project_id
+  node_service_account_name        = var.node_service_account_name
+  cloud_build_service_account_name = var.cloud_build_service_account_name
+  terraform_service_account_name   = var.terraform_service_account_name
+  workload_service_account_name    = var.workload_service_account_name
 
   depends_on = [module.foundation]
 }
@@ -136,14 +134,15 @@ module "cloud_build" {
 module "gke" {
   source = "terraform-google-modules/kubernetes-engine/google"
 
-  project_id        = var.project_id
-  name              = var.cluster_name
-  region            = var.region
-  zones             = var.zones
-  network           = google_compute_network.main.name
-  subnetwork        = google_compute_subnetwork.gke.name
-  ip_range_pods     = var.pods_range_name
-  ip_range_services = var.services_range_name
+  project_id         = var.project_id
+  name               = var.cluster_name
+  region             = var.region
+  zones              = var.zones
+  network            = google_compute_network.main.name
+  subnetwork         = google_compute_subnetwork.gke.name
+  ip_range_pods      = var.pods_range_name
+  ip_range_services  = var.services_range_name
+  identity_namespace = "${var.project_id}.svc.id.goog"
 
   http_load_balancing         = true
   network_policy              = false
@@ -207,4 +206,12 @@ module "gke" {
   }
 
   depends_on = [module.foundation, module.iam]
+}
+
+resource "google_service_account_iam_member" "backend_workload_identity" {
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${module.iam.backend_workload_service_account_email}"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.workload_identity_namespace}/${var.workload_identity_service_account}]"
+
+  depends_on = [module.gke]
 }

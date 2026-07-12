@@ -1,6 +1,5 @@
 substitutions:
   _DOCKERHUB_NAMESPACE: obachimex
-  _DOCKERHUB_USERNAME: obachimex
   _APP_VERSION: ${SHORT_SHA}
   _REGION: us-central1
   _VITE_API_BASE_URL: http://localhost:8000
@@ -8,22 +7,21 @@ substitutions:
   _DEPLOY: "false"
   _CLUSTER_NAME: cloudkite-gke
   _NAMESPACE: cloudkite
-  _APP_HOST: auth.example.com
-  _STATIC_IP_NAME: cloudkite-ingress-ip
-  _CERTIFICATE_NAME: cloudkite-certificate
+  _APP_HOST: auth.kite.com
+  _STATIC_IP_NAME: cloudkite-internal-ingress-ip
+  _TLS_SECRET_NAME: auth-kite-com-tls
+  _CERTIFICATE_NAME: auth-kite-com
+  _CERTIFICATE_ISSUER_NAME: google-cas-issuer
+  _CERTIFICATE_ISSUER_KIND: ClusterIssuer
   _BACKEND_GSA: cloudkite-backend@${PROJECT_ID}.iam.gserviceaccount.com
   _CLOUD_SQL_CONNECTION: ${PROJECT_ID}:us-central1:cloudkite-postgres
   _DATABASE_SECRET_ID: cloudkite-database-credentials
 
-serviceAccount: projects/${PROJECT_ID}/serviceAccounts/ci-cd-143@chimezie-interview-project.iam.gserviceaccount.com
-
-availableSecrets:
-  secretManager:
-    - versionName: projects/${PROJECT_ID}/secrets/DOCKERHUB_TOKEN/versions/latest
-      env: DOCKERHUB_TOKEN
 options:
   logging: CLOUD_LOGGING_ONLY
   substitutionOption: ALLOW_LOOSE
+
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudkite-cloud-build@${PROJECT_ID}.iam.gserviceaccount.com
 
 steps:
   - id: build-frontend-image
@@ -56,12 +54,13 @@ steps:
     name: gcr.io/cloud-builders/docker
     entrypoint: bash
     secretEnv:
+      - DOCKERHUB_USERNAME
       - DOCKERHUB_TOKEN
     args:
       - -c
       - |
         echo "$$DOCKERHUB_TOKEN" | docker login \
-          --username "${_DOCKERHUB_USERNAME}" \
+          --username "$$DOCKERHUB_USERNAME" \
           --password-stdin
 
   - id: push-dockerhub-images
@@ -113,4 +112,17 @@ steps:
           --set ingress.enabled=true \
           --set-string ingress.host="${_APP_HOST}" \
           --set-string ingress.staticIpName="${_STATIC_IP_NAME}" \
-          --set-string ingress.managedCertificateName="${_CERTIFICATE_NAME}"
+          --set ingress.tls.enabled=true \
+          --set-string ingress.tls.secretName="${_TLS_SECRET_NAME}" \
+          --set certificate.enabled=true \
+          --set-string certificate.name="${_CERTIFICATE_NAME}" \
+          --set-string certificate.secretName="${_TLS_SECRET_NAME}" \
+          --set-string certificate.issuerRef.name="${_CERTIFICATE_ISSUER_NAME}" \
+          --set-string certificate.issuerRef.kind="${_CERTIFICATE_ISSUER_KIND}"
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/${PROJECT_ID}/secrets/cloudkite-dockerhub-username/versions/latest
+      env: DOCKERHUB_USERNAME
+    - versionName: projects/${PROJECT_ID}/secrets/cloudkite-dockerhub-token/versions/latest
+      env: DOCKERHUB_TOKEN
