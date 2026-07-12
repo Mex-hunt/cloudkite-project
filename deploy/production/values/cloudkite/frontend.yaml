@@ -15,6 +15,7 @@ cloudkite-app:
     host: chimex.duckdns.org
     annotations:
       acme.cert-manager.io/http01-edit-in-place: "true"
+      cert-manager.io/cluster-issuer: letsencrypt-prod
     staticIpAnnotation: kubernetes.io/ingress.global-static-ip-name
     staticIpName: cloudkite-public-ingress-ip
     forceHttps: false
@@ -32,7 +33,7 @@ cloudkite-app:
         servicePort: 80
 
   certificate:
-    enabled: true
+    enabled: false
     name: chimex-duckdns
     secretName: chimex-duckdns-tls
     annotations:
