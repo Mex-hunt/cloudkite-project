@@ -66,7 +66,7 @@ backend:
   replicaCount: 2
   image:
     repository: obachimex/cloudkite-backend
-    tag: 0.1.0
+    tag: "df249aa"
     pullPolicy: IfNotPresent
   service:
     port: 8000
