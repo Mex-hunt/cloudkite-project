@@ -87,6 +87,7 @@ certificate:
   issuerRef:
     name: google-cas-issuer
     kind: ClusterIssuer
+    group: ""
 
 secretProviderClass:
   enabled: false

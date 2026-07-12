@@ -35,7 +35,8 @@ cloudkite-app:
     secretName: auth-kite-com-tls
     issuerRef:
       name: google-cas-issuer
-      kind: ClusterIssuer
+      kind: GoogleCASClusterIssuer
+      group: cas-issuer.jetstack.io
 
   autoscaling:
     enabled: true

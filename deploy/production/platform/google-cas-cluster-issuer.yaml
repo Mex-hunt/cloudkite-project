@@ -1,0 +1,9 @@
+apiVersion: cas-issuer.jetstack.io/v1beta1
+kind: GoogleCASClusterIssuer
+metadata:
+  name: google-cas-issuer
+spec:
+  project: chimezie-interview-project
+  location: us-central1
+  caPoolId: cloudkite-ca-pool
+  certificateAuthorityId: cloudkite-private-ca
