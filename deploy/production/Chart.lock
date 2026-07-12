@@ -1,0 +1,6 @@
+dependencies:
+- name: cloudkite-app
+  repository: file://../charts/cloudkite-app
+  version: 0.1.0
+digest: sha256:986e78d02c3a26c9b504248f86d838c373ead95d2ac7bb05b78d2baf17880bf4
+generated: "2026-07-12T12:54:58.358106+01:00"

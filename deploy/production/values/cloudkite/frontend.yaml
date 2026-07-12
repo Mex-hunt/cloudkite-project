@@ -1,0 +1,41 @@
+cloudkite-app:
+  fullnameOverride: cloudkite-frontend
+
+  image:
+    repository: obachimex/cloudkite-frontend
+    tag: df249aa
+
+  labels:
+    app: cloudkite-frontend
+    component: frontend
+
+  ingress:
+    enabled: true
+    className: gce-internal
+    host: auth.kite.com
+    staticIpAnnotation: kubernetes.io/ingress.regional-static-ip-name
+    staticIpName: cloudkite-internal-ingress-ip
+    forceHttps: false
+    tls:
+      enabled: true
+      secretName: auth-kite-com-tls
+    paths:
+      - path: /auth
+        pathType: Prefix
+        serviceName: cloudkite-backend
+        servicePort: 8000
+      - path: /
+        pathType: Prefix
+        serviceName: cloudkite-frontend
+        servicePort: 80
+
+  certificate:
+    enabled: true
+    name: auth-kite-com
+    secretName: auth-kite-com-tls
+    issuerRef:
+      name: google-cas-issuer
+      kind: ClusterIssuer
+
+  autoscaling:
+    enabled: true

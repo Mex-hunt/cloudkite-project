@@ -96,29 +96,38 @@ steps:
           echo "Deployment skipped"
           exit 0
         fi
-        helm upgrade --install cloudkite deploy/charts/cloudkite-frontend \
+        helm dependency build deploy/production
+
+        helm upgrade --install cloudkite-backend deploy/production \
           --namespace "${_NAMESPACE}" \
           --create-namespace \
           --atomic \
           --timeout 10m \
-          --set-string image.repository="${_DOCKERHUB_NAMESPACE}/cloudkite-frontend" \
-          --set-string image.tag="${_APP_VERSION}" \
-          --set-string backend.image.repository="${_DOCKERHUB_NAMESPACE}/cloudkite-backend" \
-          --set-string backend.image.tag="${_APP_VERSION}" \
-          --set-string backend.googleServiceAccount="${_BACKEND_GSA}" \
-          --set-string backend.cloudSql.connectionName="${_CLOUD_SQL_CONNECTION}" \
-          --set-string backend.cloudSql.credentialsSecretProject="${PROJECT_ID}" \
-          --set-string backend.cloudSql.credentialsSecretId="${_DATABASE_SECRET_ID}" \
-          --set ingress.enabled=true \
-          --set-string ingress.host="${_APP_HOST}" \
-          --set-string ingress.staticIpName="${_STATIC_IP_NAME}" \
-          --set ingress.tls.enabled=true \
-          --set-string ingress.tls.secretName="${_TLS_SECRET_NAME}" \
-          --set certificate.enabled=true \
-          --set-string certificate.name="${_CERTIFICATE_NAME}" \
-          --set-string certificate.secretName="${_TLS_SECRET_NAME}" \
-          --set-string certificate.issuerRef.name="${_CERTIFICATE_ISSUER_NAME}" \
-          --set-string certificate.issuerRef.kind="${_CERTIFICATE_ISSUER_KIND}"
+          -f deploy/production/values.yaml \
+          -f deploy/production/values/cloudkite/backend.yaml \
+          --set-string cloudkite-app.image.repository="${_DOCKERHUB_NAMESPACE}/cloudkite-backend" \
+          --set-string cloudkite-app.image.tag="${_APP_VERSION}" \
+          --set-string cloudkite-app.serviceAccount.annotations."iam\.gke\.io/gcp-service-account"="${_BACKEND_GSA}" \
+          --set-string cloudkite-app.backend.databaseCredentials.secretProject="${PROJECT_ID}" \
+          --set-string cloudkite-app.backend.databaseCredentials.secretId="${_DATABASE_SECRET_ID}" \
+          --set-string cloudkite-app.backend.cloudSqlProxy.connectionName="${_CLOUD_SQL_CONNECTION}"
+
+        helm upgrade --install cloudkite-frontend deploy/production \
+          --namespace "${_NAMESPACE}" \
+          --create-namespace \
+          --atomic \
+          --timeout 10m \
+          -f deploy/production/values.yaml \
+          -f deploy/production/values/cloudkite/frontend.yaml \
+          --set-string cloudkite-app.image.repository="${_DOCKERHUB_NAMESPACE}/cloudkite-frontend" \
+          --set-string cloudkite-app.image.tag="${_APP_VERSION}" \
+          --set-string cloudkite-app.ingress.host="${_APP_HOST}" \
+          --set-string cloudkite-app.ingress.staticIpName="${_STATIC_IP_NAME}" \
+          --set-string cloudkite-app.ingress.tls.secretName="${_TLS_SECRET_NAME}" \
+          --set-string cloudkite-app.certificate.name="${_CERTIFICATE_NAME}" \
+          --set-string cloudkite-app.certificate.secretName="${_TLS_SECRET_NAME}" \
+          --set-string cloudkite-app.certificate.issuerRef.name="${_CERTIFICATE_ISSUER_NAME}" \
+          --set-string cloudkite-app.certificate.issuerRef.kind="${_CERTIFICATE_ISSUER_KIND}"
 
 availableSecrets:
   secretManager:
