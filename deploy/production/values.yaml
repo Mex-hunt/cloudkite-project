@@ -4,9 +4,6 @@ cloudkite-app:
   image:
     pullPolicy: IfNotPresent
 
-  imagePullSecrets:
-    - name: dockerhub-registry
-
   service:
     enabled: true
     type: ClusterIP
