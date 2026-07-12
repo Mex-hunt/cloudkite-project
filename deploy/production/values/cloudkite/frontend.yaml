@@ -11,14 +11,14 @@ cloudkite-app:
 
   ingress:
     enabled: true
-    className: gce-internal
-    host: auth.kite.com
-    staticIpAnnotation: kubernetes.io/ingress.regional-static-ip-name
-    staticIpName: cloudkite-internal-ingress-ip
+    className: gce
+    host: chimex.duckdns.org
+    staticIpAnnotation: kubernetes.io/ingress.global-static-ip-name
+    staticIpName: cloudkite-public-ingress-ip
     forceHttps: false
     tls:
       enabled: true
-      secretName: auth-kite-com-tls
+      secretName: chimex-duckdns-tls
     paths:
       - path: /auth
         pathType: Prefix
@@ -31,12 +31,11 @@ cloudkite-app:
 
   certificate:
     enabled: true
-    name: auth-kite-com
-    secretName: auth-kite-com-tls
+    name: chimex-duckdns
+    secretName: chimex-duckdns-tls
     issuerRef:
-      name: google-cas-issuer
-      kind: GoogleCASClusterIssuer
-      group: cas-issuer.jetstack.io
+      name: letsencrypt-prod
+      kind: ClusterIssuer
 
   autoscaling:
     enabled: true

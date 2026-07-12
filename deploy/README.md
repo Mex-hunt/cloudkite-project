@@ -15,7 +15,7 @@ deploy/
       cloudkite.yaml
       cert-manager.yaml
     platform/
-      google-cas-cluster-issuer.yaml
+      letsencrypt-cluster-issuer.yaml
     values.yaml
     values/
       cloudkite/
@@ -38,8 +38,7 @@ creates one Argo CD application per values file.
 | --- | --- | --- | --- |
 | `cloudkite-namespaces` | `deploy/production/namespaces` | n/a | `argocd` |
 | `cloudkite-cert-manager` | Jetstack Helm chart | n/a | `cert-manager` |
-| `cloudkite-google-cas-issuer` | Jetstack OCI Helm chart | n/a | `cert-manager` |
-| `cloudkite-google-cas-cluster-issuer` | `deploy/production/platform` | n/a | `cert-manager` |
+| `cloudkite-cert-issuers` | `deploy/production/platform` | n/a | `cert-manager` |
 | `cloudkite-workloads` | `deploy/production` | all files in `values/cloudkite/*.yaml` | `cloudkite` |
 
 Do not enable `CreateNamespace=true` on the workload apps. Namespaces are
@@ -81,7 +80,8 @@ When those flags are enabled, the same deployment template adds the database
 credentials environment variable, CSI volume mount, `SecretProviderClass`, and
 Cloud SQL proxy sidecar. Frontend apps leave `backend.enabled` as `false`.
 
-TLS for `auth.kite.com` is issued through Google CAS. Terraform creates the CA
-pool and private CA, while Argo CD installs cert-manager, google-cas-issuer, and
-the `GoogleCASClusterIssuer`. The frontend values file enables the app
-`Certificate` and points the Ingress at `auth-kite-com-tls`.
+TLS for `chimex.duckdns.org` is issued through Let's Encrypt. Terraform reserves
+the global external IP for the public GKE Ingress, DuckDNS points at that IP,
+and Argo CD installs cert-manager plus the `letsencrypt-prod` `ClusterIssuer`.
+The frontend values file enables the app `Certificate` and points the Ingress at
+`chimex-duckdns-tls`.
