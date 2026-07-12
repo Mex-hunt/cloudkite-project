@@ -1,0 +1,10 @@
+apiVersion: v2
+name: cloudkite-production
+description: Production environment wrapper for Cloudkite applications
+type: application
+version: 0.1.0
+dependencies:
+  - name: cloudkite-app
+    repository: file://../charts/cloudkite-app
+    version: 0.1.0
+

@@ -1,0 +1,129 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: stable
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+labels: {}
+podAnnotations: {}
+
+serviceAccount:
+  create: false
+  name: ""
+  annotations: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+  targetPort: http
+
+containerPorts:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+
+env: []
+envFrom: []
+
+command: []
+args: []
+
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+ingress:
+  enabled: false
+  className: gce-internal
+  host: ""
+  staticIpAnnotation: kubernetes.io/ingress.regional-static-ip-name
+  staticIpName: ""
+  forceHttps: false
+  tls:
+    enabled: false
+    secretName: ""
+  paths:
+    - path: /
+      pathType: Prefix
+      serviceName: ""
+      servicePort: 80
+
+certificate:
+  enabled: false
+  name: ""
+  secretName: ""
+  dnsNames: []
+  issuerRef:
+    name: google-cas-issuer
+    kind: ClusterIssuer
+
+secretProviderClass:
+  enabled: false
+  name: ""
+  provider: gke
+  secrets: []
+
+backend:
+  enabled: false
+  databaseCredentials:
+    enabled: false
+    secretProviderClassName: cloudkite-database
+    secretProject: ""
+    secretId: ""
+    version: latest
+    fileName: database.json
+    mountPath: /var/secrets
+    envName: DATABASE_CREDENTIALS_FILE
+  cloudSqlProxy:
+    enabled: false
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
+    connectionName: ""
+    privateIp: true
+    structuredLogs: true
+    port: 5432
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+extraVolumeMounts: []
+extraVolumes: []
+sidecars: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

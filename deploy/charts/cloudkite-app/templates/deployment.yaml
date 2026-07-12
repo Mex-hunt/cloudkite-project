@@ -1,0 +1,130 @@
+{{- $backendDatabaseCredentials := and .Values.backend.enabled .Values.backend.databaseCredentials.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cloudkite-app.fullname" . }}
+  labels:
+    {{- include "cloudkite-app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      {{- include "cloudkite-app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cloudkite-app.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "cloudkite-app.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if or .Values.env $backendDatabaseCredentials }}
+          env:
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if $backendDatabaseCredentials }}
+            - name: {{ .Values.backend.databaseCredentials.envName }}
+              value: {{ printf "%s/%s" .Values.backend.databaseCredentials.mountPath .Values.backend.databaseCredentials.fileName | quote }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            {{- toYaml .Values.containerPorts | nindent 12 }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if or .Values.extraVolumeMounts $backendDatabaseCredentials }}
+          volumeMounts:
+            {{- if $backendDatabaseCredentials }}
+            - name: database-credentials
+              mountPath: {{ .Values.backend.databaseCredentials.mountPath }}
+              readOnly: true
+            {{- end }}
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- if and .Values.backend.enabled .Values.backend.cloudSqlProxy.enabled }}
+        - name: cloud-sql-proxy
+          image: {{ .Values.backend.cloudSqlProxy.image | quote }}
+          args:
+            {{- if .Values.backend.cloudSqlProxy.privateIp }}
+            - --private-ip
+            {{- end }}
+            {{- if .Values.backend.cloudSqlProxy.structuredLogs }}
+            - --structured-logs
+            {{- end }}
+            - --port={{ .Values.backend.cloudSqlProxy.port }}
+            - {{ .Values.backend.cloudSqlProxy.connectionName | quote }}
+          securityContext:
+            runAsNonRoot: true
+          resources:
+            {{- toYaml .Values.backend.cloudSqlProxy.resources | nindent 12 }}
+        {{- end }}
+        {{- with .Values.sidecars }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- if or .Values.extraVolumes $backendDatabaseCredentials }}
+      volumes:
+        {{- if $backendDatabaseCredentials }}
+        - name: database-credentials
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.backend.databaseCredentials.secretProviderClassName }}
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
