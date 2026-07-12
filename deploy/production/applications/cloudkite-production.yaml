@@ -19,10 +19,60 @@ spec:
       selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudkite-cert-manager
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://charts.jetstack.io
+    chart: cert-manager
+    targetRevision: v1.15.3
+    helm:
+      releaseName: cert-manager
+      values: |
+        crds:
+          enabled: true
+          keep: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudkite-cert-issuers
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Mex-hunt/cloudkite-project.git
+    targetRevision: main
+    path: deploy/production/platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: cloudkite-workloads
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   goTemplate: true
   goTemplateOptions:
@@ -38,7 +88,7 @@ spec:
       name: 'cloudkite-{{ trimSuffix ".yaml" .path.filename | normalize }}'
       namespace: argocd
       annotations:
-        argocd.argoproj.io/sync-wave: "1"
+        argocd.argoproj.io/sync-wave: "3"
     spec:
       project: default
       source:

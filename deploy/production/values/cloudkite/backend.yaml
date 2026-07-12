@@ -28,7 +28,7 @@ cloudkite-app:
     - name: ENVIRONMENT
       value: production
     - name: CORS_ORIGINS
-      value: https://auth.kite.com
+      value: https://chimex.duckdns.org
 
   readinessProbe:
     enabled: true

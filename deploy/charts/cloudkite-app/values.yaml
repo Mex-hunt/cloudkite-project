@@ -65,9 +65,9 @@ podDisruptionBudget:
 
 ingress:
   enabled: false
-  className: gce-internal
+  className: gce
   host: ""
-  staticIpAnnotation: kubernetes.io/ingress.regional-static-ip-name
+  staticIpAnnotation: kubernetes.io/ingress.global-static-ip-name
   staticIpName: ""
   forceHttps: false
   tls:
@@ -85,8 +85,9 @@ certificate:
   secretName: ""
   dnsNames: []
   issuerRef:
-    name: google-cas-issuer
+    name: letsencrypt-prod
     kind: ClusterIssuer
+    group: ""
 
 secretProviderClass:
   enabled: false
