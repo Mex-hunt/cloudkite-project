@@ -61,25 +61,25 @@ tolerations: []
 
 affinity: {}
 
-backend:
-  enabled: true
-  replicaCount: 2
-  image:
-    repository: obachimex/cloudkite-backend
-    tag: "df249aa"
-    pullPolicy: IfNotPresent
-  service:
-    port: 8000
-  googleServiceAccount: cloudkite-backend@PROJECT_ID.iam.gserviceaccount.com
-  cloudSql:
-    connectionName: PROJECT_ID:us-central1:cloudkite-postgres
-    proxyImage: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
-    credentialsSecretProject: PROJECT_ID
-    credentialsSecretId: cloudkite-database-credentials
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
+# backend:
+#   enabled: true
+#   replicaCount: 2
+#   image:
+#     repository: obachimex/cloudkite-backend
+#     tag: "df249aa"
+#     pullPolicy: IfNotPresent
+#   service:
+#     port: 8000
+#   googleServiceAccount: cloudkite-backend@PROJECT_ID.iam.gserviceaccount.com
+#   cloudSql:
+#     connectionName: PROJECT_ID:us-central1:cloudkite-postgres
+#     proxyImage: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
+#     credentialsSecretProject: PROJECT_ID
+#     credentialsSecretId: cloudkite-database-credentials
+#   resources:
+#     requests:
+#       cpu: 100m
+#       memory: 128Mi
+#     limits:
+#       cpu: 500m
+#       memory: 512Mi
