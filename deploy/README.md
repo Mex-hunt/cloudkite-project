@@ -8,6 +8,8 @@ deploy/
   charts/
     cloudkite-app/
   production/
+    applications/
+      cloudkite-production.yaml
     Chart.yaml
     namespaces/
       cloudkite.yaml
@@ -18,18 +20,21 @@ deploy/
         backend.yaml
 ```
 
-Create one Argo CD application for namespaces first:
+Create one Argo CD root application from the UI:
 
-| App | Path | Destination namespace |
-| --- | --- | --- |
-| `cloudkite-namespaces` | `deploy/production/namespaces` | `argocd` |
+| App | Project | Path | Destination namespace |
+| --- | --- | --- | --- |
+| `cloudkite-production` | `default` | `deploy/production/applications` | `argocd` |
 
-Then create one Argo CD application per workload:
+The root app syncs one file, `cloudkite-production.yaml`. That file creates the
+namespace app and an `ApplicationSet`. The `ApplicationSet` scans every file in
+`deploy/production/values/cloudkite/` and creates one Argo CD application per
+values file.
 
 | App | Path | Values file | Destination namespace |
 | --- | --- | --- | --- |
-| `cloudkite-frontend` | `deploy/production` | `values.yaml`, `values/cloudkite/frontend.yaml` | `cloudkite` |
-| `cloudkite-backend` | `deploy/production` | `values.yaml`, `values/cloudkite/backend.yaml` | `cloudkite` |
+| `cloudkite-namespaces` | `deploy/production/namespaces` | n/a | `argocd` |
+| `cloudkite-workloads` | `deploy/production` | all files in `values/cloudkite/*.yaml` | `cloudkite` |
 
 Do not enable `CreateNamespace=true` on the workload apps. Namespaces are
 managed explicitly from `deploy/production/namespaces`.

@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudkite-namespaces
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Mex-hunt/cloudkite-project.git
+    targetRevision: main
+    path: deploy/production/namespaces
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cloudkite-workloads
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Mex-hunt/cloudkite-project.git
+        revision: main
+        files:
+          - path: deploy/production/values/cloudkite/*.yaml
+  template:
+    metadata:
+      name: 'cloudkite-{{ trimSuffix ".yaml" .path.filename | normalize }}'
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/Mex-hunt/cloudkite-project.git
+        targetRevision: main
+        path: deploy/production
+        helm:
+          valueFiles:
+            - values.yaml
+            - '{{ trimPrefix "deploy/production/" .path.path }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: cloudkite
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+
