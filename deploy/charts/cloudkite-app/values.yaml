@@ -83,6 +83,7 @@ certificate:
   enabled: false
   name: ""
   secretName: ""
+  annotations: {}
   dnsNames: []
   issuerRef:
     name: letsencrypt-prod

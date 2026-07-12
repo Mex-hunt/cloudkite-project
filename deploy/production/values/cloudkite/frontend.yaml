@@ -33,6 +33,8 @@ cloudkite-app:
     enabled: true
     name: chimex-duckdns
     secretName: chimex-duckdns-tls
+    annotations:
+      cert-manager.io/issue-temporary-certificate: "true"
     issuerRef:
       name: letsencrypt-prod
       kind: ClusterIssuer
