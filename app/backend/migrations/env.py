@@ -7,7 +7,13 @@ from auth_server.config import get_settings
 from auth_server.database import metadata
 
 config = context.config
-config.set_main_option("sqlalchemy.url", get_settings().resolved_database_url)
+
+
+def escape_configparser_value(value: str) -> str:
+    return value.replace("%", "%%")
+
+
+config.set_main_option("sqlalchemy.url", escape_configparser_value(get_settings().resolved_database_url))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
