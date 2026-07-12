@@ -13,6 +13,8 @@ cloudkite-app:
     enabled: true
     className: gce
     host: chimex.duckdns.org
+    annotations:
+      acme.cert-manager.io/http01-edit-in-place: "true"
     staticIpAnnotation: kubernetes.io/ingress.global-static-ip-name
     staticIpName: cloudkite-public-ingress-ip
     forceHttps: false

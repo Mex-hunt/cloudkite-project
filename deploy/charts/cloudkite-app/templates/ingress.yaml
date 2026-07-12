@@ -13,6 +13,9 @@ metadata:
     {{- if .Values.ingress.forceHttps }}
     networking.gke.io/v1beta1.FrontendConfig: {{ include "cloudkite-app.fullname" . | quote }}
     {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
@@ -34,4 +37,3 @@ spec:
                   number: {{ .servicePort | default $.Values.service.port }}
           {{- end }}
 {{- end }}
-

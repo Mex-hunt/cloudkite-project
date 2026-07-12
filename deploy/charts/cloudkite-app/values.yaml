@@ -67,6 +67,7 @@ ingress:
   enabled: false
   className: gce
   host: ""
+  annotations: {}
   staticIpAnnotation: kubernetes.io/ingress.global-static-ip-name
   staticIpName: ""
   forceHttps: false
