@@ -1,9 +1,11 @@
-replicaCount: 2
+replicaCount: 1
 
 image:
   repository: obachimex/cloudkite-frontend
-  tag: 0.1.0
+  tag: 'df249aa'
   pullPolicy: IfNotPresent
+
+imagePullSecrets: []
 
 nameOverride: ""
 fullnameOverride: ""
@@ -15,16 +17,28 @@ service:
 
 ingress:
   enabled: false
-  className: "gce"
-  host: auth.example.com
+  className: "gce-internal"
+  host: auth.kite.com
+  staticIpAnnotation: "kubernetes.io/ingress.regional-static-ip-name"
   staticIpName: ""
-  managedCertificateName: ""
-  forceHttps: true
+  forceHttps: false
+  tls:
+    enabled: false
+    secretName: auth-kite-com-tls
+
+certificate:
+  enabled: false
+  name: auth-kite-com
+  secretName: auth-kite-com-tls
+  dnsNames: []
+  issuerRef:
+    name: google-cas-issuer
+    kind: ClusterIssuer
 
 autoscaling:
   enabled: true
-  minReplicas: 2
-  maxReplicas: 6
+  minReplicas: 1
+  maxReplicas: 5
   targetCPUUtilizationPercentage: 70
 
 podDisruptionBudget:
