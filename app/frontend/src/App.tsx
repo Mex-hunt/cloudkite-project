@@ -3,6 +3,12 @@ import { LogOut, ShieldCheck } from "lucide-react";
 import { AuthResponse, login, logout, register, runtimeConfig } from "./api";
 import "./styles.css";
 
+function binaryToken(value: string): string {
+  return Array.from(value)
+    .map((character) => character.charCodeAt(0).toString(2).padStart(8, "0"))
+    .join(" ");
+}
+
 export function App() {
   const [view, setView] = useState<"login" | "register" | "hello">("login");
   const [registerEmail, setRegisterEmail] = useState("");
@@ -123,6 +129,14 @@ export function App() {
         {view === "hello" && user ? (
         <section className="panel hello-panel">
           <h2>hello user = {user.email}</h2>
+          <p>hello, here is your token</p>
+          <div className="token-block" aria-label="Binary token">
+            {binaryToken(token)}
+          </div>
+          <details>
+            <summary>View raw token</summary>
+            <div className="token-block raw-token">{token}</div>
+          </details>
           <button type="button" className="secondary" onClick={handleLogout}>
             <LogOut size={17} />
             Logout
