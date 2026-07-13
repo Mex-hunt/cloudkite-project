@@ -96,4 +96,4 @@ update_image "$FRONTEND_VALUES" "${DOCKERHUB_NAMESPACE}/cloudkite-frontend" "$AP
 update_env_value "$FRONTEND_VALUES" "VITE_APP_VERSION" "$APP_VERSION"
 update_image "$BACKEND_VALUES" "${DOCKERHUB_NAMESPACE}/cloudkite-backend" "$APP_VERSION"
 
-echo "Promoted Cloudkite images to ${APP_VERSION}"
+echo "Prepared Cloudkite deployment values for ${APP_VERSION}"

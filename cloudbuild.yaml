@@ -62,14 +62,14 @@ steps:
         docker push "${_DOCKERHUB_NAMESPACE}/cloudkite-frontend:${_APP_VERSION}"
         docker push "${_DOCKERHUB_NAMESPACE}/cloudkite-backend:${_APP_VERSION}"
 
-  - id: promote-gitops-values
+  - id: deploy-new-build
     name: alpine:3.20
     entrypoint: sh
     args:
       - -ceu
       - |
         if [ "${_DEPLOY}" != "true" ] || [ "${BRANCH_NAME}" != "main" ]; then
-          echo "GitOps promotion skipped"
+          echo "GitOps deployment skipped"
           exit 0
         fi
 
@@ -77,12 +77,12 @@ steps:
 
         APP_VERSION="${_APP_VERSION}" \
           DOCKERHUB_NAMESPACE="${_DOCKERHUB_NAMESPACE}" \
-          bash scripts/promote-gitops-images.sh
+          bash scripts/deploy-gitops-images.sh
 
         if git diff --quiet -- \
           deploy/production/values/cloudkite/frontend.yaml \
           deploy/production/values/cloudkite/backend.yaml; then
-          echo "No GitOps values changes to promote"
+          echo "No GitOps deployment values changed"
           exit 0
         fi
 
@@ -91,7 +91,7 @@ steps:
         git add \
           deploy/production/values/cloudkite/frontend.yaml \
           deploy/production/values/cloudkite/backend.yaml
-        git commit -m "chore(gitops): promote images ${_APP_VERSION}"
+        git commit -m "chore(gitops): deploy images ${_APP_VERSION}"
         git push origin "HEAD:${_GITOPS_BRANCH}"
 
 availableSecrets:
