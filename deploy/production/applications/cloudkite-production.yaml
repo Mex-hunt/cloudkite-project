@@ -67,12 +67,33 @@ spec:
       selfHeal: true
 ---
 apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudkite-monitoring
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Mex-hunt/cloudkite-project.git
+    targetRevision: main
+    path: deploy/production/monitoring
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: cloudkite-workloads
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   goTemplate: true
   goTemplateOptions:
@@ -88,7 +109,7 @@ spec:
       name: 'cloudkite-{{ trimSuffix ".yaml" .path.filename | normalize }}'
       namespace: argocd
       annotations:
-        argocd.argoproj.io/sync-wave: "3"
+        argocd.argoproj.io/sync-wave: "4"
     spec:
       project: default
       source:

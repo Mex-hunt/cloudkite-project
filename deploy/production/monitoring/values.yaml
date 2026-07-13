@@ -1,0 +1,121 @@
+kube-prometheus-stack:
+  fullnameOverride: cloudkite-monitoring
+
+  crds:
+    enabled: true
+
+  defaultRules:
+    create: true
+    rules:
+      etcd: false
+      kubeControllerManager: false
+      kubeProxy: false
+      kubeScheduler: false
+
+  alertmanager:
+    enabled: true
+    config:
+      global:
+        resolve_timeout: 5m
+        smtp_smarthost: smtp.gmail.com:587
+        smtp_from: chimezieuzoma36@gmail.com
+        smtp_auth_username: chimezieuzoma36@gmail.com
+        smtp_auth_password: REPLACE_WITH_GMAIL_APP_PASSWORD
+        smtp_require_tls: true
+      route:
+        group_by:
+          - namespace
+          - alertname
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        receiver: cloudkite-email
+      receivers:
+        - name: cloudkite-email
+          email_configs:
+            - to: chimezieuzoma36@gmail.com
+              send_resolved: true
+    alertmanagerSpec:
+      replicas: 1
+      retention: 120h
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+  grafana:
+    enabled: true
+    defaultDashboardsEnabled: true
+    service:
+      type: ClusterIP
+    ingress:
+      enabled: true
+      ingressClassName: gce
+      annotations:
+        acme.cert-manager.io/http01-edit-in-place: "true"
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        kubernetes.io/ingress.global-static-ip-name: cloudkite-public-ingress-ip
+      hosts:
+        - monitoring.chimex.duckdns.org
+      tls:
+        - secretName: monitoring-chimex-duckdns-tls
+          hosts:
+            - monitoring.chimex.duckdns.org
+    persistence:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 384Mi
+
+  prometheus:
+    prometheusSpec:
+      replicas: 1
+      retention: 7d
+      scrapeInterval: 30s
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      ruleSelectorNilUsesHelmValues: false
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: 750m
+          memory: 1Gi
+
+  kubeEtcd:
+    enabled: false
+
+  kubeControllerManager:
+    enabled: false
+
+  kubeScheduler:
+    enabled: false
+
+  kubeProxy:
+    enabled: false
+
+  kube-state-metrics:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  prometheus-node-exporter:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
