@@ -58,7 +58,7 @@ cloudkite-app:
       memory: 512Mi
 
   podDisruptionBudget:
-    enabled: true
+    enabled: false
     minAvailable: 1
 
   backend:
