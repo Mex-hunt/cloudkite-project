@@ -2,7 +2,7 @@ kube-prometheus-stack:
   fullnameOverride: cloudkite-monitoring
 
   crds:
-    enabled: true
+    enabled: false
 
   defaultRules:
     create: true
