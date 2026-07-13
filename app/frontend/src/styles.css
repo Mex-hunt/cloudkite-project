@@ -128,6 +128,30 @@ button.secondary {
   color: #172033;
 }
 
+summary {
+  color: #2f6f73;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.token-block {
+  background: #0f172a;
+  border-radius: 8px;
+  color: #d9f99d;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  max-height: 170px;
+  overflow: auto;
+  padding: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.raw-token {
+  margin-top: 10px;
+}
+
 .link-button {
   background: transparent;
   color: #2f6f73;
