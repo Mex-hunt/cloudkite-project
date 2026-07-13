@@ -6,94 +6,58 @@ DOCKERHUB_NAMESPACE="${DOCKERHUB_NAMESPACE:-obachimex}"
 FRONTEND_VALUES="${FRONTEND_VALUES:-deploy/production/values/cloudkite/frontend.yaml}"
 BACKEND_VALUES="${BACKEND_VALUES:-deploy/production/values/cloudkite/backend.yaml}"
 
-update_image() {
-  local path="$1"
-  local repository="$2"
-  local version="$3"
-  local tmp
+# Ensure yq is installed (if not already handled in your cloudbuild.yaml)
+if ! command -v yq &> /dev/null; then
+  echo "Installing yq..."
+  apk add --no-cache yq
+fi
 
-  tmp="$(mktemp)"
+#!/usr/bin/env bash
+set -euo pipefail
 
-  awk -v repository="$repository" -v version="$version" '
-    /^  image:[[:space:]]*$/ {
-      in_image = 1
-      print
-      next
-    }
+APP_VERSION="${APP_VERSION:?APP_VERSION is required}"
+DOCKERHUB_NAMESPACE="${DOCKERHUB_NAMESPACE:-obachimex}"
+FRONTEND_VALUES="${FRONTEND_VALUES:-deploy/production/values/cloudkite/frontend.yaml}"
+BACKEND_VALUES="${BACKEND_VALUES:-deploy/production/values/cloudkite/backend.yaml}"
 
-    in_image && /^  [A-Za-z0-9_-]+:/ {
-      in_image = 0
-    }
+# Ensure yq is installed (if not already handled in your cloudbuild.yaml)
+if ! command -v yq &> /dev/null; then
+  echo "Installing yq..."
+  apk add --no-cache yq
+fi
 
-    in_image && /^    repository:/ {
-      sub(/repository:.*/, "repository: " repository)
-      updated_repository = 1
-    }
+#Update Frontend Image and Version
+yq eval "
+  .image.repository = \"${DOCKERHUB_NAMESPACE}/cloudkite-frontend\" |
+  .image.tag = \"${APP_VERSION}\"
+" -i "$FRONTEND_VALUES"
 
-    in_image && /^    tag:/ {
-      sub(/tag:.*/, "tag: " version)
-      updated_tag = 1
-    }
+# Update the environment variable array element matching VITE_APP_VERSION
+yq eval "
+  (.env[] | select(.name == \"VITE_APP_VERSION\")).value = \"${APP_VERSION}\"
+" -i "$FRONTEND_VALUES"
 
-    { print }
+# 2. Update Backend Image
+yq eval "
+  .image.repository = \"${DOCKERHUB_NAMESPACE}/cloudkite-backend\" |
+  .image.tag = \"${APP_VERSION}\"
+" -i "$BACKEND_VALUES"
 
-    END {
-      if (!updated_repository) {
-        print "Could not update image.repository in " FILENAME > "/dev/stderr"
-        exit 1
-      }
-      if (!updated_tag) {
-        print "Could not update image.tag in " FILENAME > "/dev/stderr"
-        exit 1
-      }
-    }
-  ' "$path" > "$tmp"
+echo "Prepared Cloudkite deployment values for ${APP_VERSION}"
+yq eval "
+  .image.repository = \"${DOCKERHUB_NAMESPACE}/cloudkite-frontend\" |
+  .image.tag = \"${APP_VERSION}\"
+" -i "$FRONTEND_VALUES"
 
-  mv "$tmp" "$path"
-}
+# Update the environment variable array element matching VITE_APP_VERSION
+yq eval "
+  (.env[] | select(.name == \"VITE_APP_VERSION\")).value = \"${APP_VERSION}\"
+" -i "$FRONTEND_VALUES"
 
-update_env_value() {
-  local path="$1"
-  local name="$2"
-  local value="$3"
-  local tmp
-
-  tmp="$(mktemp)"
-
-  awk -v name="$name" -v value="$value" '
-    $0 ~ "^[[:space:]]*- name: " name "[[:space:]]*$" {
-      pending_value_update = 1
-      print
-      next
-    }
-
-    pending_value_update && /^[[:space:]]+value:/ {
-      sub(/value:.*/, "value: " value)
-      updated = 1
-      pending_value_update = 0
-      print
-      next
-    }
-
-    pending_value_update && /^[[:space:]]*- name:/ {
-      pending_value_update = 0
-    }
-
-    { print }
-
-    END {
-      if (!updated) {
-        print "Could not update env " name " in " FILENAME > "/dev/stderr"
-        exit 1
-      }
-    }
-  ' "$path" > "$tmp"
-
-  mv "$tmp" "$path"
-}
-
-update_image "$FRONTEND_VALUES" "${DOCKERHUB_NAMESPACE}/cloudkite-frontend" "$APP_VERSION"
-update_env_value "$FRONTEND_VALUES" "VITE_APP_VERSION" "$APP_VERSION"
-update_image "$BACKEND_VALUES" "${DOCKERHUB_NAMESPACE}/cloudkite-backend" "$APP_VERSION"
+#  Update Backend Image
+yq eval "
+  .image.repository = \"${DOCKERHUB_NAMESPACE}/cloudkite-backend\" |
+  .image.tag = \"${APP_VERSION}\"
+" -i "$BACKEND_VALUES"
 
 echo "Prepared Cloudkite deployment values for ${APP_VERSION}"
