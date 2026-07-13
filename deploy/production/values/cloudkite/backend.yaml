@@ -1,13 +1,14 @@
 cloudkite-app:
   fullnameOverride: cloudkite-backend
-
   replicaCount: 2
+
   image:
     repository: obachimex/cloudkite-backend
     tag: 95a0fde
   labels:
     app: cloudkite-backend
     component: backend
+
   serviceAccount:
     create: true
     name: cloudkite-backend
@@ -23,11 +24,14 @@ cloudkite-app:
     - name: http
       containerPort: 8000
       protocol: TCP
+
   env:
     - name: ENVIRONMENT
       value: production
     - name: CORS_ORIGINS
       value: https://chimex.duckdns.org
+
+
   readinessProbe:
     enabled: true
     httpGet:
@@ -40,6 +44,8 @@ cloudkite-app:
       path: /healthz
       port: http
     initialDelaySeconds: 20
+
+
   resources:
     requests:
       cpu: 100m
@@ -56,6 +62,8 @@ cloudkite-app:
       enabled: true
     cloudSqlProxy:
       enabled: true
+
+      
   autoscaling:
     enabled: true
     minReplicas: 2
