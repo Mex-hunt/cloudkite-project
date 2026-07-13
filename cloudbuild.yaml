@@ -40,6 +40,24 @@ steps:
       - ${_DOCKERHUB_NAMESPACE}/cloudkite-backend:${_APP_VERSION}
       - .
 
+  - id: code-qaulity-checks
+    name: gcr.io/cloud-builders/docker
+    args:
+      - -c
+      - | 
+        echo "SCAN CODE QUALITY CHECKS "
+ 
+
+  - id: build-backend-image
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - app/backend/Dockerfile
+      - -t
+      - ${_DOCKERHUB_NAMESPACE}/cloudkite-backend:${_APP_VERSION}
+      - .
+
   - id: dockerhub-login
     name: gcr.io/cloud-builders/docker
     entrypoint: bash
@@ -105,6 +123,14 @@ steps:
         git -c credential.helper= push \
           "https://x-access-token:$${GITHUB_TOKEN}@github.com/Mex-hunt/cloudkite-project.git" \
           "HEAD:${_GITOPS_BRANCH}"
+
+  - id: image-scan
+    name: gcr.io/cloud-builders/docker
+    args:
+      - -c
+      - | 
+        echo "SCAN IMAGES FOR VULNERABILITIES "
+ 
 
 availableSecrets:
   secretManager:
