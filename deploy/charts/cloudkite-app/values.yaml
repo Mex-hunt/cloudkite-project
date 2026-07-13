@@ -68,6 +68,12 @@ autoscaling:
   maxReplicas: 5
   targetCPUUtilizationPercentage: 70
 
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
 podDisruptionBudget:
   enabled: false
   minAvailable: 1

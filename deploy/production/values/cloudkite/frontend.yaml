@@ -46,7 +46,3 @@ cloudkite-app:
       kind: ClusterIssuer
   autoscaling:
     enabled: true
-image:
-  repository: obachimex/cloudkite-frontend
-  tag: b792ab0
-env: []
