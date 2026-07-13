@@ -1,14 +1,11 @@
 cloudkite-app:
   fullnameOverride: cloudkite-frontend
-
   image:
     repository: obachimex/cloudkite-frontend
     tag: 41d547e
-
   labels:
     app: cloudkite-frontend
     component: frontend
-
   env:
     - name: VITE_API_BASE_URL
       value: https://chimex.duckdns.org
@@ -16,7 +13,6 @@ cloudkite-app:
       value: 41d547e
     - name: VITE_ENVIRONMENT
       value: production
-
   ingress:
     enabled: true
     className: gce
@@ -39,7 +35,6 @@ cloudkite-app:
         pathType: Prefix
         serviceName: cloudkite-frontend
         servicePort: 80
-
   certificate:
     enabled: false
     name: chimex-duckdns
@@ -49,6 +44,9 @@ cloudkite-app:
     issuerRef:
       name: letsencrypt-prod
       kind: ClusterIssuer
-
   autoscaling:
     enabled: true
+image:
+  repository: obachimex/cloudkite-frontend
+  tag: b792ab0
+env: []

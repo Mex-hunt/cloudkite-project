@@ -1,54 +1,44 @@
 cloudkite-app:
   fullnameOverride: cloudkite-backend
   replicaCount: 2
-
   image:
     repository: obachimex/cloudkite-backend
     tag: 41d547e
-
   labels:
     app: cloudkite-backend
     component: backend
-
   serviceAccount:
     create: true
     name: cloudkite-backend
     annotations:
       iam.gke.io/gcp-service-account: cloudkite-backend@chimezie-interview-project.iam.gserviceaccount.com
-
   service:
     port: 8000
-
   serviceMonitor:
     enabled: true
     path: /metrics
     port: http
-
   containerPorts:
     - name: http
       containerPort: 8000
       protocol: TCP
-
   env:
     - name: ENVIRONMENT
       value: production
     - name: CORS_ORIGINS
       value: https://chimex.duckdns.org
-
   readinessProbe:
     enabled: true
     httpGet:
       path: /readyz
       port: http
     initialDelaySeconds: 10
-
   livenessProbe:
     enabled: true
     httpGet:
       path: /healthz
       port: http
     initialDelaySeconds: 20
-
   resources:
     requests:
       cpu: 100m
@@ -56,17 +46,17 @@ cloudkite-app:
     limits:
       cpu: 500m
       memory: 512Mi
-
   podDisruptionBudget:
     enabled: false
     minAvailable: 1
-
   backend:
     enabled: true
     databaseCredentials:
       enabled: true
     cloudSqlProxy:
       enabled: true
-
   autoscaling:
     enabled: false
+image:
+  repository: obachimex/cloudkite-backend
+  tag: b792ab0
