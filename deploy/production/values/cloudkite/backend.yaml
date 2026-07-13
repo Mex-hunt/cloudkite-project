@@ -3,7 +3,7 @@ cloudkite-app:
   replicaCount: 2
   image:
     repository: obachimex/cloudkite-backend
-    tag: 41d547e
+    tag: 95a0fde
   labels:
     app: cloudkite-backend
     component: backend
