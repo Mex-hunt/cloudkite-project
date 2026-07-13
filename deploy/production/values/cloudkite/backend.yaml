@@ -4,7 +4,7 @@ cloudkite-app:
 
   image:
     repository: obachimex/cloudkite-backend
-    tag: 26952ab
+    tag: 5e3941e
 
   labels:
     app: cloudkite-backend
