@@ -2,7 +2,7 @@ cloudkite-app:
   fullnameOverride: cloudkite-frontend
   image:
     repository: obachimex/cloudkite-frontend
-    tag: c6156e8
+    tag: 439b73e
   labels:
     app: cloudkite-frontend
     component: frontend
@@ -10,7 +10,7 @@ cloudkite-app:
     - name: VITE_API_BASE_URL
       value: https://chimex.duckdns.org
     - name: VITE_APP_VERSION
-      value: c6156e8
+      value: 439b73e
     - name: VITE_ENVIRONMENT
       value: production
   ingress:
