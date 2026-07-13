@@ -3,7 +3,7 @@ cloudkite-app:
 
   image:
     repository: obachimex/cloudkite-frontend
-    tag: 5e3941e
+    tag: 0925aec
 
   labels:
     app: cloudkite-frontend
@@ -13,7 +13,7 @@ cloudkite-app:
     - name: VITE_API_BASE_URL
       value: https://chimex.duckdns.org
     - name: VITE_APP_VERSION
-      value: 5e3941e
+      value: 0925aec
     - name: VITE_ENVIRONMENT
       value: production
 
