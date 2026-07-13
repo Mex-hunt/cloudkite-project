@@ -20,7 +20,7 @@ kube-prometheus-stack:
         smtp_smarthost: smtp.gmail.com:587
         smtp_from: chimezieuzoma36@gmail.com
         smtp_auth_username: chimezieuzoma36@gmail.com
-        smtp_auth_password: REPLACE_WITH_GMAIL_APP_PASSWORD
+        smtp_auth_password_file: /etc/alertmanager/secrets/alertmanager-smtp/smtp-password
         smtp_require_tls: true
       route:
         group_by:
@@ -36,6 +36,8 @@ kube-prometheus-stack:
             - to: chimezieuzoma36@gmail.com
               send_resolved: true
     alertmanagerSpec:
+      secrets:
+        - alertmanager-smtp
       replicas: 1
       retention: 120h
       resources:
@@ -49,6 +51,12 @@ kube-prometheus-stack:
   grafana:
     enabled: true
     defaultDashboardsEnabled: true
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        searchNamespace: ALL
     service:
       type: ClusterIP
     ingress:

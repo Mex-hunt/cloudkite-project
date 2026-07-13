@@ -1,0 +1,84 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cloudkite-alert-rules
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: cloudkite-alert-rules
+    app.kubernetes.io/part-of: cloudkite
+    app.kubernetes.io/managed-by: Helm
+spec:
+  groups:
+    - name: cloudkite.application
+      rules:
+        - alert: CloudkiteBackendUnavailable
+          expr: sum(up{namespace="cloudkite", service="cloudkite-backend"}) < 1
+          for: 5m
+          labels:
+            severity: critical
+            service: cloudkite-backend
+          annotations:
+            summary: Cloudkite backend is unavailable
+            description: Prometheus has not seen a healthy scrape target for the Cloudkite backend for at least 5 minutes.
+
+        - alert: CloudkiteBackendHighErrorRate
+          expr: |
+            (
+              sum(rate(auth_http_requests_total{status=~"5.."}[5m]))
+              /
+              clamp_min(sum(rate(auth_http_requests_total[5m])), 1)
+            ) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            service: cloudkite-backend
+          annotations:
+            summary: Cloudkite backend 5xx error rate is high
+            description: More than 5% of backend HTTP requests have returned 5xx responses for at least 10 minutes.
+
+        - alert: CloudkiteBackendHighLatency
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum(rate(auth_http_request_duration_seconds_bucket[5m])) by (le)
+            ) > 1
+          for: 10m
+          labels:
+            severity: warning
+            service: cloudkite-backend
+          annotations:
+            summary: Cloudkite backend latency is high
+            description: Backend p95 request latency has been above 1 second for at least 10 minutes.
+
+    - name: cloudkite.kubernetes
+      rules:
+        - alert: CloudkiteDeploymentUnavailable
+          expr: kube_deployment_status_replicas_unavailable{namespace="cloudkite", deployment=~"cloudkite-.*"} > 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: Cloudkite deployment has unavailable replicas
+            description: Deployment {{ "{{" }} $labels.deployment {{ "}}" }} has unavailable replicas in namespace {{ "{{" }} $labels.namespace {{ "}}" }}.
+
+        - alert: CloudkitePodRestartingFrequently
+          expr: increase(kube_pod_container_status_restarts_total{namespace="cloudkite"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Cloudkite pod is restarting frequently
+            description: Pod {{ "{{" }} $labels.pod {{ "}}" }} container {{ "{{" }} $labels.container {{ "}}" }} restarted more than 3 times in 15 minutes.
+
+        - alert: CloudkiteCertificateExpiringSoon
+          expr: |
+            (
+              certmanager_certificate_expiration_timestamp_seconds{namespace=~"cloudkite|monitoring"}
+              - time()
+            ) < 1209600
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: Cloudkite TLS certificate expires soon
+            description: Certificate {{ "{{" }} $labels.name {{ "}}" }} in namespace {{ "{{" }} $labels.namespace {{ "}}" }} expires in less than 14 days.
