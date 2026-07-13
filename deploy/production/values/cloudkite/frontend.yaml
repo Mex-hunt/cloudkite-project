@@ -26,6 +26,7 @@ cloudkite-app:
     tls:
       enabled: true
       secretName: chimex-duckdns-tls
+      
     paths:
       - path: /auth
         pathType: Prefix
@@ -35,6 +36,7 @@ cloudkite-app:
         pathType: Prefix
         serviceName: cloudkite-frontend
         servicePort: 80
+        
   certificate:
     enabled: false
     name: chimex-duckdns
