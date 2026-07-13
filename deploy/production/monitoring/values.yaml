@@ -60,18 +60,7 @@ kube-prometheus-stack:
     service:
       type: ClusterIP
     ingress:
-      enabled: true
-      ingressClassName: gce
-      annotations:
-        acme.cert-manager.io/http01-edit-in-place: "true"
-        cert-manager.io/cluster-issuer: letsencrypt-prod
-        kubernetes.io/ingress.global-static-ip-name: cloudkite-public-ingress-ip
-      hosts:
-        - monitoring.chimex.duckdns.org
-      tls:
-        - secretName: monitoring-chimex-duckdns-tls
-          hosts:
-            - monitoring.chimex.duckdns.org
+      enabled: false
     persistence:
       enabled: false
     resources:
