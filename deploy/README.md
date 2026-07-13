@@ -60,6 +60,7 @@ The chart keeps the common app sections reusable:
 - `readinessProbe`
 - `resources`
 - `autoscaling`
+- `strategy`
 - `podDisruptionBudget`
 - `ingress`
 - `certificate`

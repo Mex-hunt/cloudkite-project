@@ -1,6 +1,6 @@
 cloudkite-app:
   fullnameOverride: cloudkite-backend
-  replicaCount: 2
+  replicaCount: 1
 
   image:
     repository: obachimex/cloudkite-backend
@@ -58,7 +58,7 @@ cloudkite-app:
       memory: 512Mi
 
   podDisruptionBudget:
-    enabled: false
+    enabled: true
     minAvailable: 1
 
   backend:
@@ -69,4 +69,4 @@ cloudkite-app:
       enabled: true
 
   autoscaling:
-    enabled: false
+    enabled: true
