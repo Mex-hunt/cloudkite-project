@@ -9,6 +9,14 @@ cloudkite-app:
     app: cloudkite-frontend
     component: frontend
 
+  env:
+    - name: VITE_API_BASE_URL
+      value: https://chimex.duckdns.org
+    - name: VITE_APP_VERSION
+      value: df249aa
+    - name: VITE_ENVIRONMENT
+      value: production
+
   ingress:
     enabled: true
     className: gce

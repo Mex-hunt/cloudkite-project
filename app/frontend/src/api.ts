@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const config = window.__CLOUDKITE_CONFIG__ ?? {};
+const API_BASE_URL = config.apiBaseUrl ?? import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export interface User {
   id: string;
@@ -80,6 +81,6 @@ export function logout(token: string): Promise<void> {
 
 export const runtimeConfig = {
   apiBaseUrl: API_BASE_URL,
-  appVersion: import.meta.env.VITE_APP_VERSION ?? "0.1.0",
-  environment: import.meta.env.VITE_ENVIRONMENT ?? "local"
+  appVersion: config.appVersion ?? import.meta.env.VITE_APP_VERSION ?? "0.1.0",
+  environment: config.environment ?? import.meta.env.VITE_ENVIRONMENT ?? "local"
 };
