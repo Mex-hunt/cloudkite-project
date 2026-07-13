@@ -77,6 +77,14 @@ steps:
 
         apk add --no-cache bash git
 
+        LAST_COMMIT_MESSAGE="$(git log -1 --pretty=%s)"
+        case "$${LAST_COMMIT_MESSAGE}" in
+          "chore(gitops): deploy images "*)
+            echo "GitOps deployment skipped for GitOps-generated commit"
+            exit 0
+            ;;
+        esac
+
         APP_VERSION="${_APP_VERSION}" \
           DOCKERHUB_NAMESPACE="${_DOCKERHUB_NAMESPACE}" \
           bash scripts/deploy-gitops-images.sh
