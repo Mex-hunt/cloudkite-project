@@ -2,20 +2,10 @@ substitutions:
   _DOCKERHUB_NAMESPACE: obachimex
   _APP_VERSION: ${SHORT_SHA}
   _REGION: us-central1
-  _VITE_API_BASE_URL: http://localhost:8000
+  _VITE_API_BASE_URL: https://chimex.duckdns.org
   _VITE_ENVIRONMENT: production
   _DEPLOY: "false"
-  _CLUSTER_NAME: cloudkite-gke
-  _NAMESPACE: cloudkite
-  _APP_HOST: auth.kite.com
-  _STATIC_IP_NAME: cloudkite-internal-ingress-ip
-  _TLS_SECRET_NAME: auth-kite-com-tls
-  _CERTIFICATE_NAME: auth-kite-com
-  _CERTIFICATE_ISSUER_NAME: google-cas-issuer
-  _CERTIFICATE_ISSUER_KIND: ClusterIssuer
-  _BACKEND_GSA: cloudkite-backend@${PROJECT_ID}.iam.gserviceaccount.com
-  _CLOUD_SQL_CONNECTION: ${PROJECT_ID}:us-central1:cloudkite-postgres
-  _DATABASE_SECRET_ID: cloudkite-database-credentials
+  _GITOPS_BRANCH: main
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -72,62 +62,37 @@ steps:
         docker push "${_DOCKERHUB_NAMESPACE}/cloudkite-frontend:${_APP_VERSION}"
         docker push "${_DOCKERHUB_NAMESPACE}/cloudkite-backend:${_APP_VERSION}"
 
-  - id: get-gke-credentials
-    name: gcr.io/cloud-builders/gcloud
-    entrypoint: bash
-    args:
-      - -ceu
-      - |
-        if [[ "${_DEPLOY}" != "true" || "${BRANCH_NAME}" != "main" ]]; then
-          echo "Deployment skipped for branch ${BRANCH_NAME}"
-          exit 0
-        fi
-        gcloud container clusters get-credentials "${_CLUSTER_NAME}" \
-          --region "${_REGION}" \
-          --project "${PROJECT_ID}"
-
-  - id: deploy
-    name: alpine/helm:3.16.4
+  - id: deploy-new-build
+    name: alpine:3.20
     entrypoint: sh
     args:
       - -ceu
       - |
         if [ "${_DEPLOY}" != "true" ] || [ "${BRANCH_NAME}" != "main" ]; then
-          echo "Deployment skipped"
+          echo "GitOps deployment skipped"
           exit 0
         fi
-        helm dependency build deploy/production
 
-        helm upgrade --install cloudkite-backend deploy/production \
-          --namespace "${_NAMESPACE}" \
-          --create-namespace \
-          --atomic \
-          --timeout 10m \
-          -f deploy/production/values.yaml \
-          -f deploy/production/values/cloudkite/backend.yaml \
-          --set-string cloudkite-app.image.repository="${_DOCKERHUB_NAMESPACE}/cloudkite-backend" \
-          --set-string cloudkite-app.image.tag="${_APP_VERSION}" \
-          --set-string cloudkite-app.serviceAccount.annotations."iam\.gke\.io/gcp-service-account"="${_BACKEND_GSA}" \
-          --set-string cloudkite-app.backend.databaseCredentials.secretProject="${PROJECT_ID}" \
-          --set-string cloudkite-app.backend.databaseCredentials.secretId="${_DATABASE_SECRET_ID}" \
-          --set-string cloudkite-app.backend.cloudSqlProxy.connectionName="${_CLOUD_SQL_CONNECTION}"
+        apk add --no-cache bash git
 
-        helm upgrade --install cloudkite-frontend deploy/production \
-          --namespace "${_NAMESPACE}" \
-          --create-namespace \
-          --atomic \
-          --timeout 10m \
-          -f deploy/production/values.yaml \
-          -f deploy/production/values/cloudkite/frontend.yaml \
-          --set-string cloudkite-app.image.repository="${_DOCKERHUB_NAMESPACE}/cloudkite-frontend" \
-          --set-string cloudkite-app.image.tag="${_APP_VERSION}" \
-          --set-string cloudkite-app.ingress.host="${_APP_HOST}" \
-          --set-string cloudkite-app.ingress.staticIpName="${_STATIC_IP_NAME}" \
-          --set-string cloudkite-app.ingress.tls.secretName="${_TLS_SECRET_NAME}" \
-          --set-string cloudkite-app.certificate.name="${_CERTIFICATE_NAME}" \
-          --set-string cloudkite-app.certificate.secretName="${_TLS_SECRET_NAME}" \
-          --set-string cloudkite-app.certificate.issuerRef.name="${_CERTIFICATE_ISSUER_NAME}" \
-          --set-string cloudkite-app.certificate.issuerRef.kind="${_CERTIFICATE_ISSUER_KIND}"
+        APP_VERSION="${_APP_VERSION}" \
+          DOCKERHUB_NAMESPACE="${_DOCKERHUB_NAMESPACE}" \
+          bash scripts/deploy-gitops-images.sh
+
+        if git diff --quiet -- \
+          deploy/production/values/cloudkite/frontend.yaml \
+          deploy/production/values/cloudkite/backend.yaml; then
+          echo "No GitOps deployment values changed"
+          exit 0
+        fi
+
+        git config user.email "cloud-build@${PROJECT_ID}.iam.gserviceaccount.com"
+        git config user.name "cloud-build"
+        git add \
+          deploy/production/values/cloudkite/frontend.yaml \
+          deploy/production/values/cloudkite/backend.yaml
+        git commit -m "chore(gitops): deploy images ${_APP_VERSION}"
+        git push origin "HEAD:${_GITOPS_BRANCH}"
 
 availableSecrets:
   secretManager:
