@@ -52,3 +52,4 @@ cloudkite-app:
 
   autoscaling:
     enabled: true
+
