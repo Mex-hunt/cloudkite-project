@@ -24,6 +24,15 @@ service:
   port: 80
   targetPort: http
 
+serviceMonitor:
+  enabled: false
+  labels: {}
+  annotations: {}
+  interval: 30s
+  scrapeTimeout: 10s
+  path: /metrics
+  port: http
+
 containerPorts:
   - name: http
     containerPort: 8080

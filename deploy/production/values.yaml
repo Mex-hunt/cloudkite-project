@@ -46,7 +46,7 @@ cloudkite-app:
     targetCPUUtilizationPercentage: 70
 
   podDisruptionBudget:
-    enabled: true
+    enabled: false
     minAvailable: 1
 
   backend:
