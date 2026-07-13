@@ -1,6 +1,6 @@
 cloudkite-app:
   fullnameOverride: cloudkite-backend
-  replicaCount: 2
+  replicaCount: 1
 
   image:
     repository: obachimex/cloudkite-backend
@@ -63,7 +63,7 @@ cloudkite-app:
     cloudSqlProxy:
       enabled: true
 
-      
+
   autoscaling:
     enabled: true
     minReplicas: 2
